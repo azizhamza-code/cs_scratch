@@ -1,0 +1,21 @@
+CHIP Memory {
+    IN in[16], load, address[15];
+    OUT out[16];
+
+    PARTS:
+    // Determine which memory region to access
+    DMux4Way(in=load, sel=address[13..14], a=loadRAM1, b=loadRAM2, c=loadScreen, d=loadKeyboard);
+    Or(a=loadRAM1, b=loadRAM2, out=loadRAM);
+
+    // RAM: 16K registers (0x0000 to 0x3FFF)
+    RAM16K(in=in, load=loadRAM, address=address[0..13], out=ramOut);
+
+    // Screen: 8K registers (0x4000 to 0x5FFF)
+    Screen(in=in, load=loadScreen, address=address[0..12], out=screenOut);
+
+    // Keyboard: 1 register (0x6000)
+    Keyboard(out=kbdOut);
+
+    // Select the output based on the address
+    Mux4Way16(a=ramOut, b=ramOut, c=screenOut, d=kbdOut, sel=address[13..14], out=out);
+}
